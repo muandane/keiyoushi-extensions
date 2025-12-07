@@ -1,8 +1,8 @@
 {
   "name": "community-extensions",
   "version": "0.8.0",
-  "repositoryName": "Paperback Community Extensions (0.8)",
-  "description": "Community maintained Paperback extension repository",
+  "repositoryName": "Keiyoushi Community Extensions (0.8)",
+  "description": "Keiyoushi maintained Paperback extension repository",
   "main": "index.js",
   "scripts": {
     "bundle": "npx paperback bundle",
@@ -10,7 +10,7 @@
     "test": "npx paperback test",
     "nodemon": "nodemon"
   },
-  "author": "Netsky",
+  "author": "Keiyoushi",
   "license": "GPL-3.0-or-later",
   "devDependencies": {
     "@tsconfig/recommended": "^1.0.1",
