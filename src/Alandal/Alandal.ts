@@ -1,20 +1,20 @@
 import {
-    type Chapter,
-    type ChapterDetails,
-    type ChapterProviding,
+    Chapter,
+    ChapterDetails,
+    ChapterProviding,
     ContentRating,
-    type DUISection,
-    type HomePageSectionsProviding,
-    type HomeSection,
-    type MangaProviding,
-    type PagedResults,
-    type Request,
-    type Response,
-    type SearchRequest,
-    type SearchResultsProviding,
-    type SourceInfo,
+    DUISection,
+    HomePageSectionsProviding,
+    HomeSection,
+    MangaProviding,
+    PagedResults,
+    Request,
+    Response,
+    SearchRequest,
+    SearchResultsProviding,
+    SourceInfo,
     SourceIntents,
-    type SourceManga
+    SourceManga
 } from '@paperback/types'
 
 import {
