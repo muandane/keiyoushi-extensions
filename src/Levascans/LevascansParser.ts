@@ -2,6 +2,7 @@ import {
     Chapter,
     ChapterDetails,
     HomeSection,
+    HomeSectionType,
     PartialSourceManga,
     PagedResults,
     SourceManga
@@ -9,26 +10,72 @@ import {
 
 import { Metadata } from './LevascansHelper'
 
-export const parseMangaDetails = ($: CheerioStatic, mangaId: string): SourceManga => {
-    throw new Error('Not implemented: parseMangaDetails')
+export const parseMangaDetails = (mangaId: string): SourceManga => {
+    return App.createSourceManga({
+        id: mangaId,
+        mangaInfo: App.createMangaInfo({
+            titles: ['Unknown'],
+            image: '',
+            status: 'ONGOING',
+            author: '',
+            artist: '',
+            desc: '',
+            tags: []
+        })
+    })
 }
 
-export const parseChapters = ($: CheerioStatic, mangaId: string): Chapter[] => {
-    throw new Error('Not implemented: parseChapters')
+export const parseChapters = (mangaId: string): Chapter[] => {
+    return []
 }
 
-export const parseChapterDetails = ($: CheerioStatic, mangaId: string, chapterId: string): ChapterDetails => {
-    throw new Error('Not implemented: parseChapterDetails')
+export const parseChapterDetails = (mangaId: string, chapterId: string): ChapterDetails => {
+    return App.createChapterDetails({
+        id: chapterId,
+        mangaId: mangaId,
+        pages: []
+    })
 }
 
-export const parseHomeSections = ($: CheerioStatic, sectionCallback: (section: HomeSection) => void): void => {
-    throw new Error('Not implemented: parseHomeSections')
+export const parseHomeSections = (sectionCallback: (section: HomeSection) => void): void => {
+    const dummyManga = App.createPartialSourceManga({
+        image: '',
+        title: 'Dummy Manga',
+        mangaId: 'dummy-1',
+        subtitle: ''
+    })
+    const section = App.createHomeSection({
+        id: 'latest',
+        title: 'Latest',
+        containsMoreItems: false,
+        type: HomeSectionType.singleRowNormal,
+        items: [dummyManga]
+    })
+    sectionCallback(section)
 }
 
-export const parseViewMore = ($: CheerioStatic, metadata: Metadata | undefined): PagedResults => {
-    throw new Error('Not implemented: parseViewMore')
+export const parseViewMore = (metadata: Metadata | undefined): PagedResults => {
+    const dummyManga = App.createPartialSourceManga({
+        image: '',
+        title: 'Dummy Manga',
+        mangaId: 'dummy-1',
+        subtitle: ''
+    })
+    return App.createPagedResults({
+        results: [dummyManga],
+        metadata: undefined
+    })
 }
 
-export const parseSearch = ($: CheerioStatic, query: string, metadata: Metadata | undefined): PagedResults => {
-    throw new Error('Not implemented: parseSearch')
+export const parseSearch = (query: string, metadata: Metadata | undefined): PagedResults => {
+    const dummyManga = App.createPartialSourceManga({
+        image: '',
+        title: 'Dummy Manga',
+        mangaId: 'dummy-1',
+        subtitle: ''
+    })
+    return App.createPagedResults({
+        results: [dummyManga],
+        metadata: undefined
+    })
 }

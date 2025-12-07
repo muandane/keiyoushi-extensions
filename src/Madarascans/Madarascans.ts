@@ -7,6 +7,7 @@ import {
     DUISection,
     HomePageSectionsProviding,
     HomeSection,
+    HomeSectionType,
     MangaProviding,
     PagedResults,
     Request,
@@ -47,8 +48,6 @@ export const MadarascansInfo: SourceInfo = {
 
 export class Madarascans implements SearchResultsProviding, MangaProviding, ChapterProviding, HomePageSectionsProviding {
 
-    constructor(private cheerio: CheerioAPI) { }
-
     requestManager = App.createRequestManager({
         requestsPerSecond: 4,
         requestTimeout: 15000,
@@ -87,26 +86,26 @@ export class Madarascans implements SearchResultsProviding, MangaProviding, Chap
     }
 
     async getMangaDetails(mangaId: string): Promise<SourceManga> {
-        throw new Error('Not implemented: getMangaDetails')
+        return parseMangaDetails(mangaId)
     }
 
     async getChapters(mangaId: string): Promise<Chapter[]> {
-        throw new Error('Not implemented: getChapters')
+        return parseChapters(mangaId)
     }
 
     async getChapterDetails(mangaId: string, chapterId: string): Promise<ChapterDetails> {
-        throw new Error('Not implemented: getChapterDetails')
+        return parseChapterDetails(mangaId, chapterId)
     }
 
     async getHomePageSections(sectionCallback: (section: HomeSection) => void): Promise<void> {
-        throw new Error('Not implemented: getHomePageSections')
+        parseHomeSections(sectionCallback)
     }
 
     async getViewMoreItems(homepageSectionId: string, metadata: any): Promise<PagedResults> {
-        throw new Error('Not implemented: getViewMoreItems')
+        return parseViewMore(metadata)
     }
 
     async getSearchResults(query: SearchRequest, metadata: any): Promise<PagedResults> {
-        throw new Error('Not implemented: getSearchResults')
+        return parseSearch(query.title ?? '', metadata)
     }
 }
