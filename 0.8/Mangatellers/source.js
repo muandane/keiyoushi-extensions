@@ -509,14 +509,14 @@ var _Sources = (() => {
       "use strict";
       Object.defineProperty(exports, "__esModule", { value: true });
       exports.BadgeColor = void 0;
-      var BadgeColor2;
-      (function(BadgeColor3) {
-        BadgeColor3["BLUE"] = "default";
-        BadgeColor3["GREEN"] = "success";
-        BadgeColor3["GREY"] = "info";
-        BadgeColor3["YELLOW"] = "warning";
-        BadgeColor3["RED"] = "danger";
-      })(BadgeColor2 = exports.BadgeColor || (exports.BadgeColor = {}));
+      var BadgeColor;
+      (function(BadgeColor2) {
+        BadgeColor2["BLUE"] = "default";
+        BadgeColor2["GREEN"] = "success";
+        BadgeColor2["GREY"] = "info";
+        BadgeColor2["YELLOW"] = "warning";
+        BadgeColor2["RED"] = "danger";
+      })(BadgeColor = exports.BadgeColor || (exports.BadgeColor = {}));
     }
   });
 
@@ -637,13 +637,13 @@ var _Sources = (() => {
       "use strict";
       Object.defineProperty(exports, "__esModule", { value: true });
       exports.HomeSectionType = void 0;
-      var HomeSectionType3;
-      (function(HomeSectionType4) {
-        HomeSectionType4["singleRowNormal"] = "singleRowNormal";
-        HomeSectionType4["singleRowLarge"] = "singleRowLarge";
-        HomeSectionType4["doubleRow"] = "doubleRow";
-        HomeSectionType4["featured"] = "featured";
-      })(HomeSectionType3 = exports.HomeSectionType || (exports.HomeSectionType = {}));
+      var HomeSectionType;
+      (function(HomeSectionType2) {
+        HomeSectionType2["singleRowNormal"] = "singleRowNormal";
+        HomeSectionType2["singleRowLarge"] = "singleRowLarge";
+        HomeSectionType2["doubleRow"] = "doubleRow";
+        HomeSectionType2["featured"] = "featured";
+      })(HomeSectionType = exports.HomeSectionType || (exports.HomeSectionType = {}));
     }
   });
 
@@ -727,73 +727,26 @@ var _Sources = (() => {
     Mangatellers: () => Mangatellers,
     MangatellersInfo: () => MangatellersInfo
   });
-  var import_types2 = __toESM(require_lib());
+  var import_types = __toESM(require_lib());
 
   // src/Mangatellers/MangatellersParser.ts
-  var import_types = __toESM(require_lib());
-  var parseMangaDetails = (mangaId) => {
-    return App.createSourceManga({
-      id: mangaId,
-      mangaInfo: App.createMangaInfo({
-        titles: ["Unknown"],
-        image: "",
-        status: "ONGOING",
-        author: "",
-        artist: "",
-        desc: "",
-        tags: []
-      })
-    });
+  var parseMangaDetails = ($, mangaId) => {
+    throw new Error("parseMangaDetails not implemented - parse manga details from the page HTML");
   };
-  var parseChapters = (mangaId) => {
-    return [];
+  var parseChapters = ($, mangaId) => {
+    throw new Error("parseChapters not implemented - parse chapter list from the page HTML");
   };
-  var parseChapterDetails = (mangaId, chapterId) => {
-    return App.createChapterDetails({
-      id: chapterId,
-      mangaId,
-      pages: []
-    });
+  var parseChapterDetails = ($, mangaId, chapterId) => {
+    throw new Error("parseChapterDetails not implemented - parse chapter pages from the page HTML");
   };
-  var parseHomeSections = (sectionCallback) => {
-    const dummyManga = App.createPartialSourceManga({
-      image: "",
-      title: "Dummy Manga",
-      mangaId: "dummy-1",
-      subtitle: ""
-    });
-    const section = App.createHomeSection({
-      id: "latest",
-      title: "Latest",
-      containsMoreItems: false,
-      type: import_types.HomeSectionType.singleRowNormal,
-      items: [dummyManga]
-    });
-    sectionCallback(section);
+  var parseHomeSections = ($, sectionCallback) => {
+    throw new Error("parseHomeSections not implemented - parse homepage sections from the page HTML");
   };
-  var parseViewMore = (metadata) => {
-    const dummyManga = App.createPartialSourceManga({
-      image: "",
-      title: "Dummy Manga",
-      mangaId: "dummy-1",
-      subtitle: ""
-    });
-    return App.createPagedResults({
-      results: [dummyManga],
-      metadata: void 0
-    });
+  var parseViewMore = ($, homepageSectionId, metadata) => {
+    throw new Error("parseViewMore not implemented - parse view more results from the page HTML");
   };
-  var parseSearch = (query, metadata) => {
-    const dummyManga = App.createPartialSourceManga({
-      image: "",
-      title: "Dummy Manga",
-      mangaId: "dummy-1",
-      subtitle: ""
-    });
-    return App.createPagedResults({
-      results: [dummyManga],
-      metadata: void 0
-    });
+  var parseSearch = ($, query, metadata) => {
+    throw new Error("parseSearch not implemented - parse search results from the page HTML");
   };
 
   // src/Mangatellers/MangatellersSettings.ts
@@ -815,13 +768,14 @@ var _Sources = (() => {
     icon: "icon.png",
     author: "Generated",
     authorWebsite: "",
-    description: "Extension that pulls manga from https://reader.mangatellers.gr",
-    contentRating: import_types2.ContentRating.EVERYONE,
-    websiteBaseURL: "https://reader.mangatellers.gr",
-    intents: import_types2.SourceIntents.MANGA_CHAPTERS | import_types2.SourceIntents.HOMEPAGE_SECTIONS | import_types2.SourceIntents.SETTINGS_UI
+    description: "Extension that pulls manga from Mangatellers",
+    contentRating: import_types.ContentRating.EVERYONE,
+    websiteBaseURL: MANGATELLERS_DOMAIN,
+    intents: import_types.SourceIntents.MANGA_CHAPTERS | import_types.SourceIntents.HOMEPAGE_SECTIONS | import_types.SourceIntents.SETTINGS_UI
   };
   var Mangatellers = class {
-    constructor() {
+    constructor(cheerio) {
+      this.cheerio = cheerio;
       this.requestManager = App.createRequestManager({
         requestsPerSecond: 4,
         requestTimeout: 15e3,
@@ -844,35 +798,74 @@ var _Sources = (() => {
       this.stateManager = App.createSourceStateManager();
     }
     async getSourceMenu() {
-      return Promise.resolve(App.createDUISection({
+      return App.createDUISection({
         id: "main",
         header: "Source Settings",
         isHidden: false,
         rows: async () => [
           resetSettings(this.stateManager)
         ]
-      }));
+      });
     }
     getMangaShareUrl(mangaId) {
       return `${MANGATELLERS_DOMAIN}/${mangaId}`;
     }
     async getMangaDetails(mangaId) {
-      return parseMangaDetails(mangaId);
+      const request = App.createRequest({
+        url: `${MANGATELLERS_DOMAIN}/${mangaId}`,
+        method: "GET"
+      });
+      const response = await this.requestManager.schedule(request, 1);
+      const $ = this.cheerio.load(response.data);
+      return parseMangaDetails($, mangaId);
     }
     async getChapters(mangaId) {
-      return parseChapters(mangaId);
+      const request = App.createRequest({
+        url: `${MANGATELLERS_DOMAIN}/${mangaId}`,
+        method: "GET"
+      });
+      const response = await this.requestManager.schedule(request, 1);
+      const $ = this.cheerio.load(response.data);
+      return parseChapters($, mangaId);
     }
     async getChapterDetails(mangaId, chapterId) {
-      return parseChapterDetails(mangaId, chapterId);
+      const request = App.createRequest({
+        url: `${MANGATELLERS_DOMAIN}/${chapterId}`,
+        method: "GET"
+      });
+      const response = await this.requestManager.schedule(request, 1);
+      const $ = this.cheerio.load(response.data);
+      return parseChapterDetails($, mangaId, chapterId);
     }
     async getHomePageSections(sectionCallback) {
-      parseHomeSections(sectionCallback);
+      const request = App.createRequest({
+        url: MANGATELLERS_DOMAIN,
+        method: "GET"
+      });
+      const response = await this.requestManager.schedule(request, 1);
+      const $ = this.cheerio.load(response.data);
+      parseHomeSections($, sectionCallback);
     }
     async getViewMoreItems(homepageSectionId, metadata) {
-      return parseViewMore(metadata);
+      const page = metadata?.page ?? 1;
+      const request = App.createRequest({
+        url: `${MANGATELLERS_DOMAIN}/${homepageSectionId}?page=${page}`,
+        method: "GET"
+      });
+      const response = await this.requestManager.schedule(request, 1);
+      const $ = this.cheerio.load(response.data);
+      return parseViewMore($, homepageSectionId, metadata);
     }
     async getSearchResults(query, metadata) {
-      return parseSearch(query.title ?? "", metadata);
+      const page = metadata?.page ?? 1;
+      const searchQuery = encodeURIComponent(query.title ?? "");
+      const request = App.createRequest({
+        url: `${MANGATELLERS_DOMAIN}/search?q=${searchQuery}&page=${page}`,
+        method: "GET"
+      });
+      const response = await this.requestManager.schedule(request, 1);
+      const $ = this.cheerio.load(response.data);
+      return parseSearch($, query, metadata);
     }
   };
   return __toCommonJS(Mangatellers_exports);
