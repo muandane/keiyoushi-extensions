@@ -637,13 +637,13 @@ var _Sources = (() => {
       "use strict";
       Object.defineProperty(exports, "__esModule", { value: true });
       exports.HomeSectionType = void 0;
-      var HomeSectionType;
-      (function(HomeSectionType2) {
-        HomeSectionType2["singleRowNormal"] = "singleRowNormal";
-        HomeSectionType2["singleRowLarge"] = "singleRowLarge";
-        HomeSectionType2["doubleRow"] = "doubleRow";
-        HomeSectionType2["featured"] = "featured";
-      })(HomeSectionType = exports.HomeSectionType || (exports.HomeSectionType = {}));
+      var HomeSectionType2;
+      (function(HomeSectionType3) {
+        HomeSectionType3["singleRowNormal"] = "singleRowNormal";
+        HomeSectionType3["singleRowLarge"] = "singleRowLarge";
+        HomeSectionType3["doubleRow"] = "doubleRow";
+        HomeSectionType3["featured"] = "featured";
+      })(HomeSectionType2 = exports.HomeSectionType || (exports.HomeSectionType = {}));
     }
   });
 
@@ -727,26 +727,138 @@ var _Sources = (() => {
     Thepropertyofhate: () => Thepropertyofhate,
     ThepropertyofhateInfo: () => ThepropertyofhateInfo
   });
-  var import_types = __toESM(require_lib());
+  var import_types2 = __toESM(require_lib());
 
   // src/Thepropertyofhate/ThepropertyofhateParser.ts
+  var import_types = __toESM(require_lib());
   var parseMangaDetails = ($, mangaId) => {
-    throw new Error("parseMangaDetails not implemented - parse manga details from the page HTML");
+    const title = $('h1, .title, .manga-title, [class*="title"]').first().text().trim() || "Unknown";
+    const description = $('.description, .summary, .synopsis, [class*="desc"]').first().text().trim() || "";
+    const author = $('.author, [class*="author"]').first().text().trim() || "";
+    const artist = $('.artist, [class*="artist"]').first().text().trim() || author;
+    const image = $('.cover img, .thumbnail img, img[class*="cover"], img[class*="thumb"]').first().attr("src") || $(".cover img, .thumbnail img").first().attr("data-src") || "";
+    const statusText = $('.status, [class*="status"]').first().text().trim().toLowerCase();
+    const status = statusText.includes("complete") ? "Completed" : "Ongoing";
+    return App.createSourceManga({
+      id: mangaId,
+      mangaInfo: App.createMangaInfo({
+        titles: [title],
+        image,
+        status,
+        author,
+        artist,
+        desc: description,
+        tags: []
+      })
+    });
   };
   var parseChapters = ($, mangaId) => {
-    throw new Error("parseChapters not implemented - parse chapter list from the page HTML");
+    const chapters = [];
+    const chapterElements = $('.chapter-list a, .chapters a, [class*="chapter"] a, ul li a').toArray();
+    for (let i = 0; i < chapterElements.length; i++) {
+      const element = chapterElements[i];
+      const chapterId = $(element).attr("href")?.replace(/\//g, "").split("/").filter(Boolean).pop() || `chapter-${i}`;
+      const title = $(element).text().trim() || `Chapter ${i + 1}`;
+      const chapNum = i + 1;
+      chapters.push(App.createChapter({
+        id: chapterId,
+        mangaId,
+        name: title,
+        chapNum,
+        time: /* @__PURE__ */ new Date(),
+        langCode: "\u{1F1EC}\u{1F1E7}",
+        group: ""
+      }));
+    }
+    return chapters;
   };
   var parseChapterDetails = ($, mangaId, chapterId) => {
-    throw new Error("parseChapterDetails not implemented - parse chapter pages from the page HTML");
+    const pages = [];
+    $('.reader img, .page img, .chapter-content img, [class*="reader"] img, [data-src]').each((_, el) => {
+      const src = $(el).attr("src") || $(el).attr("data-src") || $(el).attr("data-lazy-src");
+      if (src && !src.includes("data:image") && !src.includes("placeholder")) {
+        pages.push(src);
+      }
+    });
+    return App.createChapterDetails({
+      id: chapterId,
+      mangaId,
+      pages
+    });
   };
   var parseHomeSections = ($, sectionCallback) => {
-    throw new Error("parseHomeSections not implemented - parse homepage sections from the page HTML");
+    const latestItems = [];
+    const mangaElements = $('.manga-item, .series-item, [class*="manga"], [class*="series"], .item, .card').toArray();
+    for (const element of mangaElements.slice(0, 20)) {
+      const title = $(".title, .name, h3, h4, a", element).first().text().trim();
+      const image = $("img", element).first().attr("src") || $("img", element).first().attr("data-src") || "";
+      const link = $("a", element).first().attr("href") || "";
+      const mangaId = link.split("/").filter(Boolean).pop() || "";
+      if (title && mangaId) {
+        latestItems.push(App.createPartialSourceManga({
+          mangaId,
+          title,
+          image,
+          subtitle: ""
+        }));
+      }
+    }
+    const section = App.createHomeSection({
+      id: "latest",
+      title: "Latest Updates",
+      containsMoreItems: mangaElements.length > 20,
+      type: import_types.HomeSectionType.singleRowNormal,
+      items: latestItems
+    });
+    sectionCallback(section);
   };
   var parseViewMore = ($, homepageSectionId, metadata) => {
-    throw new Error("parseViewMore not implemented - parse view more results from the page HTML");
+    const items = [];
+    const mangaElements = $('.manga-item, .series-item, [class*="manga"]').toArray();
+    for (const element of mangaElements) {
+      const title = $(".title, .name, h3", element).first().text().trim();
+      const image = $("img", element).first().attr("src") || "";
+      const link = $("a", element).first().attr("href") || "";
+      const mangaId = link.split("/").filter(Boolean).pop() || "";
+      if (title && mangaId) {
+        items.push(App.createPartialSourceManga({
+          mangaId,
+          title,
+          image,
+          subtitle: ""
+        }));
+      }
+    }
+    const hasNextPage = $('.next, [class*="next"], .pagination .active').next().length > 0;
+    const nextPage = hasNextPage ? (metadata?.page || 1) + 1 : void 0;
+    return App.createPagedResults({
+      results: items,
+      metadata: nextPage ? { page: nextPage } : void 0
+    });
   };
   var parseSearch = ($, query, metadata) => {
-    throw new Error("parseSearch not implemented - parse search results from the page HTML");
+    const items = [];
+    const mangaElements = $('.manga-item, .series-item, .search-result, [class*="manga"]').toArray();
+    for (const element of mangaElements) {
+      const title = $(".title, .name, h3, h4", element).first().text().trim();
+      const image = $("img", element).first().attr("src") || "";
+      const link = $("a", element).first().attr("href") || "";
+      const mangaId = link.split("/").filter(Boolean).pop() || "";
+      if (title && mangaId) {
+        items.push(App.createPartialSourceManga({
+          mangaId,
+          title,
+          image,
+          subtitle: ""
+        }));
+      }
+    }
+    const hasNextPage = $('.next, [class*="next"], .pagination .active').next().length > 0;
+    const nextPage = hasNextPage ? (metadata?.page || 1) + 1 : void 0;
+    return App.createPagedResults({
+      results: items,
+      metadata: nextPage ? { page: nextPage } : void 0
+    });
   };
 
   // src/Thepropertyofhate/ThepropertyofhateSettings.ts
@@ -769,9 +881,9 @@ var _Sources = (() => {
     author: "Generated",
     authorWebsite: "",
     description: "Extension that pulls manga from The Property of Hate",
-    contentRating: import_types.ContentRating.EVERYONE,
+    contentRating: import_types2.ContentRating.EVERYONE,
     websiteBaseURL: THEPROPERTYOFHATE_DOMAIN,
-    intents: import_types.SourceIntents.MANGA_CHAPTERS | import_types.SourceIntents.HOMEPAGE_SECTIONS | import_types.SourceIntents.SETTINGS_UI
+    intents: import_types2.SourceIntents.MANGA_CHAPTERS | import_types2.SourceIntents.HOMEPAGE_SECTIONS | import_types2.SourceIntents.SETTINGS_UI
   };
   var Thepropertyofhate = class {
     constructor(cheerio) {
