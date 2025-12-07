@@ -1,5 +1,4 @@
 import {
-    BadgeColor,
     Chapter,
     ChapterDetails,
     ChapterProviding,
@@ -7,7 +6,6 @@ import {
     DUISection,
     HomePageSectionsProviding,
     HomeSection,
-    HomeSectionType,
     MangaProviding,
     PagedResults,
     Request,
@@ -40,13 +38,15 @@ export const Readnarutoborutosamurai8mangaonlineInfo: SourceInfo = {
     icon: 'icon.png',
     author: 'Generated',
     authorWebsite: '',
-    description: 'Extension that pulls manga from https://ww11.readnaruto.com',
+    description: 'Extension that pulls manga from Read Naruto Boruto Samurai 8 Manga Online',
     contentRating: ContentRating.EVERYONE,
-    websiteBaseURL: 'https://ww11.readnaruto.com',
+    websiteBaseURL: READNARUTOBORUTOSAMURAI8MANGAONLINE_DOMAIN,
     intents: SourceIntents.MANGA_CHAPTERS | SourceIntents.HOMEPAGE_SECTIONS | SourceIntents.SETTINGS_UI
 }
 
 export class Readnarutoborutosamurai8mangaonline implements SearchResultsProviding, MangaProviding, ChapterProviding, HomePageSectionsProviding {
+
+    constructor(private cheerio: CheerioAPI) { }
 
     requestManager = App.createRequestManager({
         requestsPerSecond: 4,
@@ -71,14 +71,14 @@ export class Readnarutoborutosamurai8mangaonline implements SearchResultsProvidi
     stateManager = App.createSourceStateManager()
 
     async getSourceMenu(): Promise<DUISection> {
-        return Promise.resolve(App.createDUISection({
+        return App.createDUISection({
             id: 'main',
             header: 'Source Settings',
             isHidden: false,
             rows: async () => [
                 resetSettings(this.stateManager)
             ]
-        }))
+        })
     }
 
     getMangaShareUrl(mangaId: string): string { 
@@ -86,26 +86,65 @@ export class Readnarutoborutosamurai8mangaonline implements SearchResultsProvidi
     }
 
     async getMangaDetails(mangaId: string): Promise<SourceManga> {
-        return parseMangaDetails(mangaId)
+        const request = App.createRequest({
+            url: `${READNARUTOBORUTOSAMURAI8MANGAONLINE_DOMAIN}/${mangaId}`,
+            method: 'GET'
+        })
+        const response = await this.requestManager.schedule(request, 1)
+        const $ = this.cheerio.load(response.data as string)
+        return parseMangaDetails($, mangaId)
     }
 
     async getChapters(mangaId: string): Promise<Chapter[]> {
-        return parseChapters(mangaId)
+        const request = App.createRequest({
+            url: `${READNARUTOBORUTOSAMURAI8MANGAONLINE_DOMAIN}/${mangaId}`,
+            method: 'GET'
+        })
+        const response = await this.requestManager.schedule(request, 1)
+        const $ = this.cheerio.load(response.data as string)
+        return parseChapters($, mangaId)
     }
 
     async getChapterDetails(mangaId: string, chapterId: string): Promise<ChapterDetails> {
-        return parseChapterDetails(mangaId, chapterId)
+        const request = App.createRequest({
+            url: `${READNARUTOBORUTOSAMURAI8MANGAONLINE_DOMAIN}/${chapterId}`,
+            method: 'GET'
+        })
+        const response = await this.requestManager.schedule(request, 1)
+        const $ = this.cheerio.load(response.data as string)
+        return parseChapterDetails($, mangaId, chapterId)
     }
 
     async getHomePageSections(sectionCallback: (section: HomeSection) => void): Promise<void> {
-        parseHomeSections(sectionCallback)
+        const request = App.createRequest({
+            url: READNARUTOBORUTOSAMURAI8MANGAONLINE_DOMAIN,
+            method: 'GET'
+        })
+        const response = await this.requestManager.schedule(request, 1)
+        const $ = this.cheerio.load(response.data as string)
+        parseHomeSections($, sectionCallback)
     }
 
     async getViewMoreItems(homepageSectionId: string, metadata: any): Promise<PagedResults> {
-        return parseViewMore(metadata)
+        const page: number = metadata?.page ?? 1
+        const request = App.createRequest({
+            url: `${READNARUTOBORUTOSAMURAI8MANGAONLINE_DOMAIN}/${homepageSectionId}?page=${page}`,
+            method: 'GET'
+        })
+        const response = await this.requestManager.schedule(request, 1)
+        const $ = this.cheerio.load(response.data as string)
+        return parseViewMore($, homepageSectionId, metadata)
     }
 
     async getSearchResults(query: SearchRequest, metadata: any): Promise<PagedResults> {
-        return parseSearch(query.title ?? '', metadata)
+        const page: number = metadata?.page ?? 1
+        const searchQuery = encodeURIComponent(query.title ?? '')
+        const request = App.createRequest({
+            url: `${READNARUTOBORUTOSAMURAI8MANGAONLINE_DOMAIN}/search?q=${searchQuery}&page=${page}`,
+            method: 'GET'
+        })
+        const response = await this.requestManager.schedule(request, 1)
+        const $ = this.cheerio.load(response.data as string)
+        return parseSearch($, query, metadata)
     }
 }
